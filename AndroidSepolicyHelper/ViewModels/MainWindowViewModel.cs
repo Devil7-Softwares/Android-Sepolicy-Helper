@@ -25,12 +25,18 @@ namespace AndroidSepolicyHelper.ViewModels
         #region Variables
         private OpenFileDialog dlgOpen;
 
+        private bool isBusy;
+        private string status;
+
         private SourceType source;
         private string logFilePath;
         private ObservableCollection<Models.Device> devices;
         #endregion
 
         #region Properties
+        public bool IsBusy { get => isBusy; set => this.RaiseAndSetIfChanged(ref isBusy, value); }
+        public string Status { get => status; set => this.RaiseAndSetIfChanged(ref status, value); }
+
         private SourceType Source { get => source; set => this.RaiseAndSetIfChanged(ref source, value); }
         public string LogFilePath { get => logFilePath; set => this.RaiseAndSetIfChanged(ref logFilePath, value); }
         public ObservableCollection<Models.Device> Devices { get => devices; set => this.RaiseAndSetIfChanged(ref devices, value); }
@@ -60,7 +66,20 @@ namespace AndroidSepolicyHelper.ViewModels
         {
             return Task.Run(() =>
             {
-                this.Devices = new ObservableCollection<Models.Device>(Utils.ADB.GetDevices());
+                try
+                {
+                    this.IsBusy = true;
+                    this.Status = "Scanning for devices...";
+                    this.Devices = new ObservableCollection<Models.Device>(Utils.ADB.GetDevices());
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    this.IsBusy = false;
+                }
             });
         }
         #endregion

@@ -1,5 +1,6 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:AndroidSepolicyHelper.Controls;assembly=AndroidSepolicyHelper"
         xmlns:vm="clr-namespace:AndroidSepolicyHelper.ViewModels;assembly=AndroidSepolicyHelper"
         xmlns:utils="clr-namespace:AndroidSepolicyHelper.Utils;assembly=AndroidSepolicyHelper"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,7 +13,7 @@
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
-  
+
   <Window.Resources>
     <utils:EnumToBoolConverter x:Key="enumToBoolConverter"/>
   </Window.Resources>
@@ -130,6 +131,10 @@
       <Button Grid.Row="0" Grid.Column="3" Name="btn_SplitSave" Width="90" Height="40">Split &amp; Save</Button>
       <Button Grid.Row="0" Grid.Column="4" Name="btn_Save" Margin="5 0 0 0" Width="90" Height="40">Save</Button>
     </Grid>
+
+    <Panel Grid.Row="0" Grid.Column="0" Grid.RowSpan="4" Background="#2A2A2A" Opacity="0.75" IsVisible="{Binding IsBusy}">
+      <controls:BusyIndicator Text="{Binding Status}" IsBusy="{Binding IsBusy}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Panel>
   </Grid>
 
 </Window>
