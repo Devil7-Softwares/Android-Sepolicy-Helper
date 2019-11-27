@@ -8,6 +8,30 @@ namespace AndroidSepolicyHelper.Utils
 {
     public class ADB
     {
+        public static IList<Models.Device> GetDevices()
+        {
+            IList<Models.Device> devices = new List<Models.Device>();
+            char[] lineSeparator = new char[] { '\r' };
+            foreach (string str in RunCommand("devices").Split(lineSeparator))
+            {
+                if (!str.StartsWith("*") && str.Trim() != "List of devices attached" && str.Trim() != "")
+                {
+                    try
+                    {
+                        char[] tabSeparator = new char[] { '\t' };
+                        string devicename = str.Split(tabSeparator)[0];
+                        string type = str.Split(tabSeparator)[1];
+                        devices.Add(new Models.Device(devicename, "Ready", type));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+            }
+            return devices;
+        }
+
         public static string RunCommand(string Command)
         {
             Process process = new Process();
