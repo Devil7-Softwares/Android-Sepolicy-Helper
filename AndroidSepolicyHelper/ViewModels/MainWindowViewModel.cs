@@ -15,6 +15,7 @@ namespace AndroidSepolicyHelper.ViewModels
         public MainWindowViewModel()
         {
             this.dlgOpen = new OpenFileDialog();
+            this.Source = SourceType.LogFile;
 
             this.SelectFile = ReactiveCommand.CreateFromTask<Window>(selectFile);
             this.RefreshDevices = ReactiveCommand.CreateFromTask(refreshDevices);
@@ -24,13 +25,23 @@ namespace AndroidSepolicyHelper.ViewModels
         #region Variables
         private OpenFileDialog dlgOpen;
 
+        private SourceType source;
         private string logFilePath;
         private ObservableCollection<Models.Device> devices;
         #endregion
 
         #region Properties
+        private SourceType Source { get => source; set => this.RaiseAndSetIfChanged(ref source, value); }
         public string LogFilePath { get => logFilePath; set => this.RaiseAndSetIfChanged(ref logFilePath, value); }
         public ObservableCollection<Models.Device> Devices { get => devices; set => this.RaiseAndSetIfChanged(ref devices, value); }
+        #endregion
+
+        #region Enums
+        public enum SourceType
+        {
+            LogFile,
+            Device
+        }
         #endregion
 
         #region Commands

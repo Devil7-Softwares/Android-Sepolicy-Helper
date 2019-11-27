@@ -1,6 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:AndroidSepolicyHelper.ViewModels;assembly=AndroidSepolicyHelper"
+        xmlns:utils="clr-namespace:AndroidSepolicyHelper.Utils;assembly=AndroidSepolicyHelper"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -11,6 +12,10 @@
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
+  
+  <Window.Resources>
+    <utils:EnumToBoolConverter x:Key="enumToBoolConverter"/>
+  </Window.Resources>
 
   <Grid Margin="10">
     <Grid.ColumnDefinitions>
@@ -37,14 +42,14 @@
 
       <TextBlock Grid.Row="0" Grid.Column="0" Margin="0 5 0 0" Text="Generate from :" />
 
-      <RadioButton Grid.Row="0" Grid.Column="1" Margin="5 0 0 0" Name="rb_LogFile" GroupName="SourceType" IsChecked="true">Logs</RadioButton>
-      <RadioButton Grid.Row="1" Grid.Column="1" Margin="5 5 0 0" Name="rb_Device" GroupName="SourceType" IsChecked="false">Device</RadioButton>
+      <RadioButton Grid.Row="0" Grid.Column="1" Margin="5 0 0 0" Name="rb_LogFile" GroupName="SourceType" IsChecked="{Binding Path=Source, Converter={StaticResource ResourceKey=enumToBoolConverter}, ConverterParameter=LogFile}">Logs</RadioButton>
+      <RadioButton Grid.Row="1" Grid.Column="1" Margin="5 5 0 0" Name="rb_Device" GroupName="SourceType" IsChecked="{Binding Path=Source, Converter={StaticResource ResourceKey=enumToBoolConverter}, ConverterParameter=Device}">Device</RadioButton>
 
       <TextBox Grid.Row="0" Grid.Column="2" Margin="5 0 0 0" Name="txt_LogFile" Watermark="Select logcat file to load..." IsReadOnly="True" IsEnabled="{Binding ElementName=rb_LogFile, Path=IsChecked}" Text="{Binding Path=LogFilePath}"/>
       <ComboBox Grid.Row="1" Grid.Column="2" Margin="5 5 0 0" Name="txt_Device" IsEnabled="{Binding ElementName=rb_Device, Path=IsChecked}" Items="{Binding Path=Devices}"/>
 
-      <Button Grid.Row="0" Grid.Column="3" Margin="5 0 0 0" Name="btn_BrowseFile" IsEnabled="{Binding ElementName=rb_LogFile, Path=IsChecked}" Command="{Binding SelectFile}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">...</Button>
-      <Button Grid.Row="1" Grid.Column="3" Margin="5 5 0 0" Name="btn_RefreshDevices" IsEnabled="{Binding ElementName=rb_Device, Path=IsChecked}" Command="{Binding RefreshDevices}">Refresh</Button>
+      <Button Grid.Row="0" Grid.Column="3" Margin="5 0 0 0" Name="btn_BrowseFile" IsEnabled="{Binding Path=Source, Converter={StaticResource ResourceKey=enumToBoolConverter}, ConverterParameter=LogFile}" Command="{Binding SelectFile}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">...</Button>
+      <Button Grid.Row="1" Grid.Column="3" Margin="5 5 0 0" Name="btn_RefreshDevices" IsEnabled="{Binding Path=Source, Converter={StaticResource ResourceKey=enumToBoolConverter}, ConverterParameter=Device}" Command="{Binding RefreshDevices}">Refresh</Button>
     </Grid>
 
     <Grid Grid.Row="1" Grid.Column="0" Margin="0 10 0 0">
