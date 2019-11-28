@@ -22,6 +22,10 @@ namespace AndroidSepolicyHelper.ViewModels
             this.SelectFile = ReactiveCommand.CreateFromTask<Window>(selectFile);
             this.RefreshDevices = ReactiveCommand.CreateFromTask(refreshDevices);
             this.StartProcess = ReactiveCommand.CreateFromTask(startProcess);
+            this.StopProcess = ReactiveCommand.CreateFromTask(stopProcess);
+
+            Utils.ADB.LogcatEnded += LogcatEnded;
+            Utils.ADB.LogcatReceived += LogcatReceived;
         }
         #endregion
 
@@ -29,6 +33,7 @@ namespace AndroidSepolicyHelper.ViewModels
         private OpenFileDialog dlgOpen;
         private List<String> SepoliciesStrList;
 
+        private bool showStopButton;
         private bool isBusy;
         private string status;
 
@@ -41,6 +46,7 @@ namespace AndroidSepolicyHelper.ViewModels
         #endregion
 
         #region Properties
+        public bool ShowStopButton { get => showStopButton; set => this.RaiseAndSetIfChanged(ref showStopButton, value); }
         public bool IsBusy { get => isBusy; set => this.RaiseAndSetIfChanged(ref isBusy, value); }
         public string Status { get => status; set => this.RaiseAndSetIfChanged(ref status, value); }
 
@@ -128,27 +134,7 @@ namespace AndroidSepolicyHelper.ViewModels
                             {
                                 while (reader.Peek() != -1)
                                 {
-                                    string logString = reader.ReadLine();
-                                    if (logString.Contains("avc: denied"))
-                                    {
-                                        Models.SepolicyInfo sepolicy = Utils.Sepolicy.GetSepolicy(logString);
-                                        if (sepolicy != null)
-                                        {
-                                            if (this.IgnoreExistingPolicies)
-                                            {
-                                                if (this.SepoliciesStrList.Contains(sepolicy.Sepolicy))
-                                                {
-                                                    continue;
-                                                }
-                                                this.SepoliciesStrList.Add(sepolicy.Sepolicy);
-                                            }
-                                            sepolicies.Add(sepolicy);
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Unable to write sepolicy for log: " + logString);
-                                        }
-                                    }
+                                    AddSepolicy(sepolicies, reader.ReadLine());
                                 }
                             }
 
@@ -166,8 +152,67 @@ namespace AndroidSepolicyHelper.ViewModels
                 }
                 else if (this.Source == SourceType.Device)
                 {
-                    throw new NotImplementedException();
+                    if (this.SelectedDevice != null)
+                    {
+                        this.ShowStopButton = true;
+                        Utils.ADB.StartLogcat(this.SelectedDevice);
+                    }
                 }
+            });
+        }
+
+        public ReactiveCommand<Unit, Unit> StopProcess { get; }
+        private Task stopProcess()
+        {
+            return Task.Run(() =>
+            {
+                if (this.Source == SourceType.Device)
+                {
+                    this.ShowStopButton = false;
+                    Utils.ADB.StopLogcat();
+                }
+            });
+        }
+        #endregion
+
+        #region Private Methods
+        private void AddSepolicy(IList<Models.SepolicyInfo> sepolicies, string logString)
+        {
+            if (logString.Contains("avc: denied"))
+            {
+                Models.SepolicyInfo sepolicy = Utils.Sepolicy.GetSepolicy(logString);
+                if (sepolicy != null)
+                {
+                    if (this.IgnoreExistingPolicies)
+                    {
+                        if (this.SepoliciesStrList.Contains(sepolicy.Sepolicy))
+                        {
+                            return;
+                        }
+                        this.SepoliciesStrList.Add(sepolicy.Sepolicy);
+                    }
+                    sepolicies.Add(sepolicy);
+                }
+                else
+                {
+                    Console.WriteLine("Unable to write sepolicy for log: " + logString);
+                }
+            }
+        }
+        #endregion
+
+        #region Events
+        private void LogcatEnded(object sender, EventArgs e)
+        {
+            this.ShowStopButton = false;
+        }
+
+        private void LogcatReceived(Utils.ADB.LogReceivedEventArgs e)
+        {
+            if (this.Sepolicies == null) this.Sepolicies = new ObservableCollection<Models.SepolicyInfo>();
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                AddSepolicy(this.Sepolicies, e.LogString);
             });
         }
         #endregion
