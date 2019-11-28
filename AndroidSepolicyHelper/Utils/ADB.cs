@@ -8,6 +8,36 @@ namespace AndroidSepolicyHelper.Utils
 {
     public class ADB
     {
+        #region Variables
+        private static Process logcatProcess;
+        #endregion
+        #region Properties
+        private static Process LogcatProcess
+        {
+            get
+            {
+                return logcatProcess;
+            }
+            set
+            {
+                if (logcatProcess != null)
+                {
+                    logcatProcess.Exited -= LogcatProcess_Exited;
+                    logcatProcess.OutputDataReceived -= LogcatProcess_OutputDataReceived;
+                    logcatProcess.ErrorDataReceived -= LogcatProcess_ErrorDataReceived;
+                }
+                logcatProcess = value;
+                if (logcatProcess != null)
+                {
+                    logcatProcess.Exited += LogcatProcess_Exited;
+                    logcatProcess.OutputDataReceived += LogcatProcess_OutputDataReceived;
+                    logcatProcess.ErrorDataReceived += LogcatProcess_ErrorDataReceived;
+                }
+            }
+        }
+        #endregion
+
+        #region Public Methods - Single Run Commands
         public static IList<Models.Device> GetDevices()
         {
             IList<Models.Device> devices = new List<Models.Device>();
@@ -31,10 +61,54 @@ namespace AndroidSepolicyHelper.Utils
             }
             return devices;
         }
+        #endregion
 
+        #region Public Methods - LogCat
+        public static void StartLogcat(Models.Device device)
+        {
+            LogcatProcess = new Process();
+            ProcessStartInfo startInfo = LogcatProcess.StartInfo;
+            startInfo.FileName = GetADBPath();
+            startInfo.Arguments = string.Format("-s {0} logcat", device.DeviceName);
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.RedirectStandardInput = true;
+            startInfo.UseShellExecute = false;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            startInfo.CreateNoWindow = true;
+            startInfo = null;
+            LogcatProcess.Start();
+            LogcatProcess.BeginOutputReadLine();
+            LogcatProcess.BeginErrorReadLine();
+        }
+
+        public static void StopLogcat()
+        {
+            if (LogcatProcess != null && !LogcatProcess.HasExited)
+                LogcatProcess.Kill();
+        }
+        #endregion
+
+        #region Public Methods - Common
         public static string RunCommand(string Command)
         {
             Process process = new Process();
+            ProcessStartInfo info = new ProcessStartInfo(GetADBPath(), Command)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            process.StartInfo = info;
+            process.Start();
+            return (process.StandardOutput.ReadToEnd() + "\r\n" + process.StandardError.ReadToEnd()).Trim();
+        }
+        #endregion
+
+        #region Private Methods
+        private static string GetADBPath()
+        {
             string folderName = "";
             string fileName = "";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -53,17 +127,41 @@ namespace AndroidSepolicyHelper.Utils
                 fileName = "adb";
             }
             string fullLocalADBPath = Path.Combine(AppContext.BaseDirectory, "adb", folderName, fileName);
-            ProcessStartInfo info = new ProcessStartInfo(File.Exists(fullLocalADBPath) ? fullLocalADBPath : fileName, Command)
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            process.StartInfo = info;
-            process.Start();
-            return (process.StandardOutput.ReadToEnd() + "\r\n" + process.StandardError.ReadToEnd()).Trim();
+            return File.Exists(fullLocalADBPath) ? fullLocalADBPath : fileName;
         }
+        #endregion
+
+        #region Events
+        public static event EventHandler LogcatEnded;
+        public static event LogReceivedEventHandler LogcatReceived;
+
+        public delegate void LogReceivedEventHandler(LogReceivedEventArgs e);
+        public class LogReceivedEventArgs : EventArgs
+        {
+            public LogReceivedEventArgs(string LogString)
+            {
+                this.LogString = LogString;
+            }
+
+            public string LogString { get; set; }
+        }
+
+        private static void LogcatProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Console.WriteLine("Logcat Error: " + e.Data);
+        }
+
+        private static void LogcatProcess_Exited(object sender, EventArgs e)
+        {
+            LogcatEnded?.Invoke(null, new EventArgs());
+        }
+
+        private static void LogcatProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+                LogcatReceived?.Invoke(new LogReceivedEventArgs(e.Data));
+        }
+        #endregion
     }
 }
 
