@@ -3,6 +3,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,11 +20,13 @@ namespace AndroidSepolicyHelper.ViewModels
 
             this.SelectFile = ReactiveCommand.CreateFromTask<Window>(selectFile);
             this.RefreshDevices = ReactiveCommand.CreateFromTask(refreshDevices);
+            this.StartProcess = ReactiveCommand.CreateFromTask(startProcess);
         }
         #endregion
 
         #region Variables
         private OpenFileDialog dlgOpen;
+        private List<String> SepoliciesStrList;
 
         private bool isBusy;
         private string status;
@@ -31,6 +34,8 @@ namespace AndroidSepolicyHelper.ViewModels
         private SourceType source;
         private string logFilePath;
         private ObservableCollection<Models.Device> devices;
+        private bool ignoreExistingPolicies;
+        private ObservableCollection<Models.SepolicyInfo> sepolicies;
         #endregion
 
         #region Properties
@@ -40,6 +45,8 @@ namespace AndroidSepolicyHelper.ViewModels
         private SourceType Source { get => source; set => this.RaiseAndSetIfChanged(ref source, value); }
         public string LogFilePath { get => logFilePath; set => this.RaiseAndSetIfChanged(ref logFilePath, value); }
         public ObservableCollection<Models.Device> Devices { get => devices; set => this.RaiseAndSetIfChanged(ref devices, value); }
+        public bool IgnoreExistingPolicies { get => ignoreExistingPolicies; set => this.RaiseAndSetIfChanged(ref ignoreExistingPolicies, value); }
+        public ObservableCollection<Models.SepolicyInfo> Sepolicies { get => sepolicies; set => this.RaiseAndSetIfChanged(ref sepolicies, value); }
         #endregion
 
         #region Enums
@@ -79,6 +86,73 @@ namespace AndroidSepolicyHelper.ViewModels
                 finally
                 {
                     this.IsBusy = false;
+                }
+            });
+        }
+
+        public ReactiveCommand<Unit, Unit> StartProcess { get; }
+        private Task startProcess()
+        {
+            return Task.Run(() =>
+            {
+                if (this.Source == SourceType.LogFile)
+                {
+                    try
+                    {
+                        if (File.Exists(this.LogFilePath))
+                        {
+                            this.IsBusy = true;
+                            this.Status = "Processing Log File...";
+
+                            ObservableCollection<Models.SepolicyInfo> sepolicies = new ObservableCollection<Models.SepolicyInfo>();
+                            if (this.IgnoreExistingPolicies)
+                            {
+                                this.SepoliciesStrList = new List<string>();
+                            }
+
+                            using (StreamReader reader = new StreamReader(this.LogFilePath))
+                            {
+                                while (reader.Peek() != -1)
+                                {
+                                    string logString = reader.ReadLine();
+                                    if (logString.Contains("avc: denied"))
+                                    {
+                                        Models.SepolicyInfo sepolicy = Utils.Sepolicy.GetSepolicy(logString);
+                                        if (sepolicy != null)
+                                        {
+                                            if (this.IgnoreExistingPolicies)
+                                            {
+                                                if (this.SepoliciesStrList.Contains(sepolicy.Sepolicy))
+                                                {
+                                                    continue;
+                                                }
+                                                this.SepoliciesStrList.Add(sepolicy.Sepolicy);
+                                            }
+                                            sepolicies.Add(sepolicy);
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Unable to write sepolicy for log: " + logString);
+                                        }
+                                    }
+                                }
+                            }
+
+                            this.Sepolicies = sepolicies;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        this.IsBusy = false;
+                    }
+                }
+                else if (this.Source == SourceType.Device)
+                {
+                    throw new NotImplementedException();
                 }
             });
         }
