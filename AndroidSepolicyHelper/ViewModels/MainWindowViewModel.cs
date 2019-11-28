@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,6 +37,7 @@ namespace AndroidSepolicyHelper.ViewModels
         private ObservableCollection<Models.Device> devices;
         private bool ignoreExistingPolicies;
         private ObservableCollection<Models.SepolicyInfo> sepolicies;
+        private Models.Device selectedDevice;
         #endregion
 
         #region Properties
@@ -47,6 +49,7 @@ namespace AndroidSepolicyHelper.ViewModels
         public ObservableCollection<Models.Device> Devices { get => devices; set => this.RaiseAndSetIfChanged(ref devices, value); }
         public bool IgnoreExistingPolicies { get => ignoreExistingPolicies; set => this.RaiseAndSetIfChanged(ref ignoreExistingPolicies, value); }
         public ObservableCollection<Models.SepolicyInfo> Sepolicies { get => sepolicies; set => this.RaiseAndSetIfChanged(ref sepolicies, value); }
+        public Models.Device SelectedDevice { get => selectedDevice; set => this.RaiseAndSetIfChanged(ref selectedDevice, value); }
         #endregion
 
         #region Enums
@@ -78,6 +81,17 @@ namespace AndroidSepolicyHelper.ViewModels
                     this.IsBusy = true;
                     this.Status = "Scanning for devices...";
                     this.Devices = new ObservableCollection<Models.Device>(Utils.ADB.GetDevices());
+                    if (this.Devices.Count > 0)
+                    {
+                        if (this.SelectedDevice == null || (this.SelectedDevice = this.Devices.ToList().Find(device => this.SelectedDevice.DeviceName == device.DeviceName)) == null)
+                        {
+                            this.SelectedDevice = this.Devices[0];
+                        }
+                    }
+                    else
+                    {
+                        this.SelectedDevice = null;
+                    }
                 }
                 catch (Exception ex)
                 {
