@@ -1,14 +1,14 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:AndroidSepolicyHelper.Controls;assembly=AndroidSepolicyHelper"
-        xmlns:vm="clr-namespace:AndroidSepolicyHelper.ViewModels;assembly=AndroidSepolicyHelper"
-        xmlns:utils="clr-namespace:AndroidSepolicyHelper.Utils;assembly=AndroidSepolicyHelper"
+        xmlns:controls="clr-namespace:Devil7.Android.SepolicyHelper.Controls;assembly=Devil7.Android.SepolicyHelper"
+        xmlns:vm="clr-namespace:Devil7.Android.SepolicyHelper.ViewModels;assembly=Devil7.Android.SepolicyHelper"
+        xmlns:utils="clr-namespace:Devil7.Android.SepolicyHelper.Utils;assembly=Devil7.Android.SepolicyHelper"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="AndroidSepolicyHelper.Views.MainWindow"
+        x:Class="Devil7.Android.SepolicyHelper.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="AndroidSepolicyHelper">
+        Title="Devil7.Android.SepolicyHelper">
 
   <Design.DataContext>
     <vm:MainWindowViewModel/>

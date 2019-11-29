@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace AndroidSepolicyHelper.Utils
+namespace Devil7.Android.SepolicyHelper.Utils
 {
     public class Sepolicy
     {

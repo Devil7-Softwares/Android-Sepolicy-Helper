@@ -1,4 +1,4 @@
-﻿namespace AndroidSepolicyHelper.Models
+﻿namespace Devil7.Android.SepolicyHelper.Models
 {
     public class Device
     {

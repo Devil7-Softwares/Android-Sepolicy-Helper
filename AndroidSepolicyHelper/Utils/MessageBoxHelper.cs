@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AndroidSepolicyHelper.Utils
+namespace Devil7.Android.SepolicyHelper.Utils
 {
     public static class MessageBoxHelper
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ReactiveUI;
 
-namespace AndroidSepolicyHelper.ViewModels
+namespace Devil7.Android.SepolicyHelper.ViewModels
 {
     public class ViewModelBase : ReactiveObject
     {

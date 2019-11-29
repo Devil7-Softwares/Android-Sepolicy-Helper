@@ -2,7 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace AndroidSepolicyHelper.Views
+namespace Devil7.Android.SepolicyHelper.Views
 {
     public class MainWindow : Window
     {

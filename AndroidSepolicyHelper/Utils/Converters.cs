@@ -1,8 +1,8 @@
-﻿using AndroidSepolicyHelper.ViewModels;
+﻿using Devil7.Android.SepolicyHelper.ViewModels;
 using Avalonia.Data.Converters;
 using System;
 
-namespace AndroidSepolicyHelper.Utils
+namespace Devil7.Android.SepolicyHelper.Utils
 {
     public class EnumToBoolConverter : IValueConverter
     {

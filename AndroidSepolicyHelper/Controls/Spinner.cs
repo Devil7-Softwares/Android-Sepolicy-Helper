@@ -4,7 +4,7 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace AndroidSepolicyHelper.Controls {
+namespace Devil7.Android.SepolicyHelper.Controls {
 	internal class Spinner : UserControl {
 		public Spinner () {
 			InitializeComponent ();

@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
 
-namespace AndroidSepolicyHelper.Controls {
+namespace Devil7.Android.SepolicyHelper.Controls {
 	public class BusyIndicator : ContentControl, IStyleable {
 		Type IStyleable.StyleKey => typeof (BusyIndicator);
 

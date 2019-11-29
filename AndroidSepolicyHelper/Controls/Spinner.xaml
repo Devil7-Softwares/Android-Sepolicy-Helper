@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="AndroidSepolicyHelper.Controls.Spinner">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Devil7.Android.SepolicyHelper.Controls.Spinner">
     <Grid>
         <Grid.Styles>
             <Style Selector="DrawingPresenter">

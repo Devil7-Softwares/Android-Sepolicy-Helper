@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Markup.Xaml;
 
-namespace AndroidSepolicyHelper
+namespace Devil7.Android.SepolicyHelper
 {
     public class App : Application
     {

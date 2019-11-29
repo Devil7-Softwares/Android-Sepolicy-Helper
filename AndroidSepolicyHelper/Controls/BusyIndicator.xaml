@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AndroidSepolicyHelper.Controls;assembly=AndroidSepolicyHelper" xmlns:controls="clr-namespace:AndroidSepolicyHelper.Controls;assembly=AndroidSepolicyHelper">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Devil7.Android.SepolicyHelper.Controls;assembly=Devil7.Android.SepolicyHelper" xmlns:controls="clr-namespace:Devil7.Android.SepolicyHelper.Controls;assembly=Devil7.Android.SepolicyHelper">
   <Style Selector="local|BusyIndicator">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>

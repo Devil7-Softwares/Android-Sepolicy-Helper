@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace AndroidSepolicyHelper.Utils
+namespace Devil7.Android.SepolicyHelper.Utils
 {
     public class ADB
     {

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AndroidSepolicyHelper.ViewModels
+namespace Devil7.Android.SepolicyHelper.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {

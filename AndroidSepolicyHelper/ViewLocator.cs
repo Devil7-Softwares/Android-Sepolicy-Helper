@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using AndroidSepolicyHelper.ViewModels;
+using Devil7.Android.SepolicyHelper.ViewModels;
 
-namespace AndroidSepolicyHelper
+namespace Devil7.Android.SepolicyHelper
 {
     public class ViewLocator : IDataTemplate
     {

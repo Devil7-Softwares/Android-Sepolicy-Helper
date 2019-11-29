@@ -1,10 +1,10 @@
 ﻿using System;
 using Avalonia;
 using Avalonia.Logging.Serilog;
-using AndroidSepolicyHelper.ViewModels;
-using AndroidSepolicyHelper.Views;
+using Devil7.Android.SepolicyHelper.ViewModels;
+using Devil7.Android.SepolicyHelper.Views;
 
-namespace AndroidSepolicyHelper
+namespace Devil7.Android.SepolicyHelper
 {
     class Program
     {
