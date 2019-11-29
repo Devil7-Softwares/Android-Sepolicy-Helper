@@ -17,11 +17,13 @@ namespace AndroidSepolicyHelper.ViewModels
         public MainWindowViewModel()
         {
             this.dlgOpen = new OpenFileDialog();
+            this.dlgFolder = new OpenFolderDialog();
             this.dlgSave = new SaveFileDialog();
             this.Source = SourceType.LogFile;
 
             this.SelectFile = ReactiveCommand.CreateFromTask<Window>(selectFile);
             this.Save = ReactiveCommand.CreateFromTask<Window>(save);
+            this.SplitSave = ReactiveCommand.CreateFromTask<Window>(splitSave);
             this.RefreshDevices = ReactiveCommand.CreateFromTask(refreshDevices);
             this.StartProcess = ReactiveCommand.CreateFromTask(startProcess);
             this.StopProcess = ReactiveCommand.CreateFromTask(stopProcess);
@@ -33,6 +35,7 @@ namespace AndroidSepolicyHelper.ViewModels
 
         #region Variables
         private OpenFileDialog dlgOpen;
+        private OpenFolderDialog dlgFolder;
         private SaveFileDialog dlgSave;
         private List<String> SepoliciesStrList;
 
@@ -227,6 +230,56 @@ namespace AndroidSepolicyHelper.ViewModels
                             {
                                 if (!list.Contains(current.Sepolicy))
                                 {
+                                    writer.WriteLine(current.Sepolicy);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    this.IsBusy = false;
+                }
+            });
+        }
+
+        public ReactiveCommand<Window, Unit> SplitSave { get; }
+        private Task splitSave(Window parent)
+        {
+            return Task.Run(async () =>
+            {
+                try
+                {
+                    this.IsBusy = true;
+                    this.Status = "Splitting & Saving Sepolicies to Files...";
+
+                    string folderName = await this.dlgFolder.ShowAsync(parent);
+
+                    if (this.Sepolicies != null && this.Sepolicies.Count > 0 && folderName.Length > 0)
+                    {
+                        List<string> existingPolicies = new List<string>();
+                        foreach (Models.SepolicyInfo current in this.Sepolicies)
+                        {
+                            string file = Path.Combine(folderName, current.Source + ".te");
+                            if (File.Exists(file))
+                            {
+                                using (StreamReader reader = new StreamReader(file))
+                                {
+                                    while (reader.Peek() != -1)
+                                    {
+                                        existingPolicies.Add(reader.ReadLine().Replace(" ", ""));
+                                    }
+                                }
+                            }
+                            if (!existingPolicies.Contains(current.Sepolicy.Replace(" ", "")))
+                            {
+                                using (StreamWriter writer = new StreamWriter(file, true, Encoding.ASCII))
+                                {
+                                    writer.NewLine = LineEnding == LineEndings.CR ? "\n" : "\r\n";
                                     writer.WriteLine(current.Sepolicy);
                                 }
                             }
