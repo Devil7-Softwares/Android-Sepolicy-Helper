@@ -127,8 +127,8 @@
       </Grid.ColumnDefinitions>
 
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Line Ending:" VerticalAlignment="Center"/>
-      <RadioButton Grid.Row="0" Grid.Column="1" Margin="5 0 0 0" Name="rb_CRLF" GroupName="LineEnding">CRLF (Windows)</RadioButton>
-      <RadioButton Grid.Row="0" Grid.Column="2" Margin="5 0 0 0" Name="rb_LF" GroupName="LineEnding" IsChecked="true">LF (Linux)</RadioButton>
+      <RadioButton Grid.Row="0" Grid.Column="1" Margin="5 0 0 0" Name="rb_CRLF" GroupName="LineEnding" IsChecked="{Binding Path=LineEnding, Converter={StaticResource ResourceKey=enumToBoolConverter}, ConverterParameter=CRLF}">CRLF (Windows)</RadioButton>
+      <RadioButton Grid.Row="0" Grid.Column="2" Margin="5 0 0 0" Name="rb_LF" GroupName="LineEnding" IsChecked="{Binding Path=LineEnding, Converter={StaticResource ResourceKey=enumToBoolConverter}, ConverterParameter=LF}">LF (Linux)</RadioButton>
 
       <Button Grid.Row="0" Grid.Column="3" Name="btn_SplitSave" Width="90" Height="40" Command="{Binding SplitSave}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">Split &amp; Save</Button>
       <Button Grid.Row="0" Grid.Column="4" Name="btn_Save" Margin="5 0 0 0" Width="90" Height="40" Command="{Binding Save}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}">Save</Button>
