@@ -77,7 +77,7 @@ namespace AndroidSepolicyHelper.ViewModels
 
         public enum LineEndings
         {
-            CR,
+            LF,
             CRLF
         }
         #endregion
@@ -224,7 +224,7 @@ namespace AndroidSepolicyHelper.ViewModels
                         }
                         using (StreamWriter writer = new StreamWriter(fileName, true, Encoding.ASCII))
                         {
-                            writer.NewLine = LineEnding == LineEndings.CR ? "\n" : "\r\n";
+                            writer.NewLine = LineEnding == LineEndings.LF ? "\n" : "\r\n";
 
                             foreach (Models.SepolicyInfo current in this.Sepolicies)
                             {
@@ -279,7 +279,7 @@ namespace AndroidSepolicyHelper.ViewModels
                             {
                                 using (StreamWriter writer = new StreamWriter(file, true, Encoding.ASCII))
                                 {
-                                    writer.NewLine = LineEnding == LineEndings.CR ? "\n" : "\r\n";
+                                    writer.NewLine = LineEnding == LineEndings.LF ? "\n" : "\r\n";
                                     writer.WriteLine(current.Sepolicy);
                                 }
                             }
