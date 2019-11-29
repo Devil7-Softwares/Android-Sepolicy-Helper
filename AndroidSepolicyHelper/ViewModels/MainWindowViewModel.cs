@@ -17,9 +17,11 @@ namespace AndroidSepolicyHelper.ViewModels
         public MainWindowViewModel()
         {
             this.dlgOpen = new OpenFileDialog();
+            this.dlgSave = new SaveFileDialog();
             this.Source = SourceType.LogFile;
 
             this.SelectFile = ReactiveCommand.CreateFromTask<Window>(selectFile);
+            this.Save = ReactiveCommand.CreateFromTask<Window>(save);
             this.RefreshDevices = ReactiveCommand.CreateFromTask(refreshDevices);
             this.StartProcess = ReactiveCommand.CreateFromTask(startProcess);
             this.StopProcess = ReactiveCommand.CreateFromTask(stopProcess);
@@ -31,6 +33,7 @@ namespace AndroidSepolicyHelper.ViewModels
 
         #region Variables
         private OpenFileDialog dlgOpen;
+        private SaveFileDialog dlgSave;
         private List<String> SepoliciesStrList;
 
         private bool showStopButton;
@@ -38,6 +41,7 @@ namespace AndroidSepolicyHelper.ViewModels
         private string status;
 
         private SourceType source;
+        private LineEndings lineEnding;
         private string logFilePath;
         private ObservableCollection<Models.Device> devices;
         private bool ignoreExistingPolicies;
@@ -52,6 +56,7 @@ namespace AndroidSepolicyHelper.ViewModels
         public string Status { get => status; set => this.RaiseAndSetIfChanged(ref status, value); }
 
         private SourceType Source { get => source; set => this.RaiseAndSetIfChanged(ref source, value); }
+        private LineEndings LineEnding { get => lineEnding; set => this.RaiseAndSetIfChanged(ref lineEnding, value); }
         public string LogFilePath { get => logFilePath; set => this.RaiseAndSetIfChanged(ref logFilePath, value); }
         public ObservableCollection<Models.Device> Devices { get => devices; set => this.RaiseAndSetIfChanged(ref devices, value); }
         public bool IgnoreExistingPolicies { get => ignoreExistingPolicies; set => this.RaiseAndSetIfChanged(ref ignoreExistingPolicies, value); }
@@ -65,6 +70,12 @@ namespace AndroidSepolicyHelper.ViewModels
         {
             LogFile,
             Device
+        }
+
+        public enum LineEndings
+        {
+            CR,
+            CRLF
         }
         #endregion
 
@@ -172,6 +183,63 @@ namespace AndroidSepolicyHelper.ViewModels
                 {
                     this.ShowStopButton = false;
                     Utils.ADB.StopLogcat();
+                }
+            });
+        }
+
+        public ReactiveCommand<Window, Unit> Save { get; }
+        private Task save(Window parent)
+        {
+            this.dlgSave.DefaultExtension = "te";
+            this.dlgSave.Filters.Clear();
+            this.dlgSave.Filters.Add(new FileDialogFilter()
+            {
+                Name = "Type Enforcement Files",
+                Extensions = new List<string>() { "te" }
+            }); ;
+
+            return Task.Run(async () =>
+            {
+                try
+                {
+                    this.IsBusy = true;
+                    this.Status = "Saving Sepolicies to File...";
+
+                    string fileName = await this.dlgSave.ShowAsync(parent);
+                    if (this.Sepolicies != null && this.Sepolicies.Count > 0 && fileName.Length > 0)
+                    {
+                        List<string> list = new List<string>();
+                        if (File.Exists(fileName))
+                        {
+                            using (StreamReader reader = new StreamReader(fileName))
+                            {
+                                while (reader.Peek() != -1)
+                                {
+                                    list.Add(reader.ReadLine());
+                                }
+                            }
+                        }
+                        using (StreamWriter writer = new StreamWriter(fileName, true, Encoding.ASCII))
+                        {
+                            writer.NewLine = LineEnding == LineEndings.CR ? "\n" : "\r\n";
+
+                            foreach (Models.SepolicyInfo current in this.Sepolicies)
+                            {
+                                if (!list.Contains(current.Sepolicy))
+                                {
+                                    writer.WriteLine(current.Sepolicy);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    this.IsBusy = false;
                 }
             });
         }
