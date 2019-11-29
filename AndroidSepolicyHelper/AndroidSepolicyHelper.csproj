@@ -4,6 +4,7 @@
     <AssemblyName>Devil7.Android.SepolicyHelper</AssemblyName>
     <RootNamespace>Devil7.Android.SepolicyHelper</RootNamespace>
     <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
