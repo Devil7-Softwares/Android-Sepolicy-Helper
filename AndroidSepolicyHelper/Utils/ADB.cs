@@ -41,7 +41,7 @@ namespace Devil7.Android.SepolicyHelper.Utils
         public static IList<Models.Device> GetDevices()
         {
             IList<Models.Device> devices = new List<Models.Device>();
-            char[] lineSeparator = new char[] { '\r' };
+            char[] lineSeparator = new char[] { '\r', '\n' };
             foreach (string str in RunCommand("devices").Split(lineSeparator))
             {
                 if (!str.StartsWith("*") && str.Trim() != "List of devices attached" && str.Trim() != "")
