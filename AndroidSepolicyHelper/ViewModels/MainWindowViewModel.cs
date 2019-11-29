@@ -24,9 +24,9 @@ namespace AndroidSepolicyHelper.ViewModels
             this.SelectFile = ReactiveCommand.CreateFromTask<Window>(selectFile);
             this.Save = ReactiveCommand.CreateFromTask<Window>(save);
             this.SplitSave = ReactiveCommand.CreateFromTask<Window>(splitSave);
-            this.RefreshDevices = ReactiveCommand.CreateFromTask(refreshDevices);
-            this.StartProcess = ReactiveCommand.CreateFromTask(startProcess);
-            this.StopProcess = ReactiveCommand.CreateFromTask(stopProcess);
+            this.RefreshDevices = ReactiveCommand.CreateFromTask<Window>(refreshDevices);
+            this.StartProcess = ReactiveCommand.CreateFromTask<Window>(startProcess);
+            this.StopProcess = ReactiveCommand.CreateFromTask<Window>(stopProcess);
 
             Utils.ADB.LogcatEnded += LogcatEnded;
             Utils.ADB.LogcatReceived += LogcatReceived;
@@ -93,10 +93,10 @@ namespace AndroidSepolicyHelper.ViewModels
             });
         }
 
-        public ReactiveCommand<Unit, Unit> RefreshDevices { get; }
-        private Task refreshDevices()
+        public ReactiveCommand<Window, Unit> RefreshDevices { get; }
+        private Task refreshDevices(Window parent)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 try
                 {
@@ -118,6 +118,7 @@ namespace AndroidSepolicyHelper.ViewModels
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                    await Utils.MessageBoxHelper.Error("Failed to refresh devices list! " + ex.Message, "Error", parent);
                 }
                 finally
                 {
@@ -126,40 +127,57 @@ namespace AndroidSepolicyHelper.ViewModels
             });
         }
 
-        public ReactiveCommand<Unit, Unit> StartProcess { get; }
-        private Task startProcess()
+        public ReactiveCommand<Window, Unit> StartProcess { get; }
+        private Task startProcess(Window parent)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 if (this.Source == SourceType.LogFile)
                 {
                     try
                     {
-                        if (File.Exists(this.LogFilePath))
+                        if (this.LogFilePath.Trim() == "")
                         {
-                            this.IsBusy = true;
-                            this.Status = "Processing Log File...";
-
-                            ObservableCollection<Models.SepolicyInfo> sepolicies = new ObservableCollection<Models.SepolicyInfo>();
-                            if (this.IgnoreExistingPolicies)
+                            await Utils.MessageBoxHelper.Error("No log file selected!", "Error", parent);
+                        }
+                        else
+                        {
+                            if (File.Exists(this.LogFilePath))
                             {
-                                this.SepoliciesStrList = new List<string>();
-                            }
+                                this.IsBusy = true;
+                                this.Status = "Processing Log File...";
 
-                            using (StreamReader reader = new StreamReader(this.LogFilePath))
-                            {
-                                while (reader.Peek() != -1)
+                                ObservableCollection<Models.SepolicyInfo> sepolicies = new ObservableCollection<Models.SepolicyInfo>();
+                                if (this.IgnoreExistingPolicies)
                                 {
-                                    AddSepolicy(sepolicies, reader.ReadLine());
+                                    this.SepoliciesStrList = new List<string>();
                                 }
-                            }
 
-                            this.Sepolicies = sepolicies;
+                                using (StreamReader reader = new StreamReader(this.LogFilePath))
+                                {
+                                    while (reader.Peek() != -1)
+                                    {
+                                        AddSepolicy(sepolicies, reader.ReadLine());
+                                    }
+                                }
+
+                                this.Sepolicies = sepolicies;
+
+                                if (sepolicies.Count == 0)
+                                    await Utils.MessageBoxHelper.Info("No sepolicy denials found in selected log file!", "Done", parent);
+                                else
+                                    await Utils.MessageBoxHelper.Info(string.Format("Successfully genarated {0} sepolicies from selected log file.", sepolicies.Count), "Done", parent);
+                            }
+                            else
+                            {
+                                await Utils.MessageBoxHelper.Error("Selected log file doesn't exist!", "Error", parent);
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
+                        await Utils.MessageBoxHelper.Error("Error on reading log file! " + ex.Message, "Error", parent);
                     }
                     finally
                     {
@@ -171,21 +189,31 @@ namespace AndroidSepolicyHelper.ViewModels
                     if (this.SelectedDevice != null)
                     {
                         this.ShowStopButton = true;
+                        await Utils.MessageBoxHelper.Info("Generating sepolicies from device is a continuous. This application will continue to read logcat from device as long as device is connected/locat exits. Press 'Stop' button to stop the process!", "Warning", parent);
                         Utils.ADB.StartLogcat(this.SelectedDevice);
                     }
+                    else
+                    {
+                        await Utils.MessageBoxHelper.Error("No device selected!", "Error", parent);
+                    }
+                }
+                else
+                {
+                    await Utils.MessageBoxHelper.Error("Select source to generate sepolicies from..!", "Error", parent);
                 }
             });
         }
 
-        public ReactiveCommand<Unit, Unit> StopProcess { get; }
-        private Task stopProcess()
+        public ReactiveCommand<Window, Unit> StopProcess { get; }
+        private Task stopProcess(Window parent)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 if (this.Source == SourceType.Device)
                 {
                     this.ShowStopButton = false;
                     Utils.ADB.StopLogcat();
+                    await Utils.MessageBoxHelper.Info("Generation of sepolicy from device stopped successfully!", "Done", parent);
                 }
             });
         }
@@ -205,40 +233,46 @@ namespace AndroidSepolicyHelper.ViewModels
             {
                 try
                 {
-                    this.IsBusy = true;
-                    this.Status = "Saving Sepolicies to File...";
-
-                    string fileName = await this.dlgSave.ShowAsync(parent);
-                    if (this.Sepolicies != null && this.Sepolicies.Count > 0 && fileName.Length > 0)
+                    if (this.Sepolicies != null && this.Sepolicies.Count > 0)
                     {
-                        List<string> list = new List<string>();
-                        if (File.Exists(fileName))
-                        {
-                            using (StreamReader reader = new StreamReader(fileName))
-                            {
-                                while (reader.Peek() != -1)
-                                {
-                                    list.Add(reader.ReadLine());
-                                }
-                            }
-                        }
-                        using (StreamWriter writer = new StreamWriter(fileName, true, Encoding.ASCII))
-                        {
-                            writer.NewLine = LineEnding == LineEndings.LF ? "\n" : "\r\n";
+                        this.IsBusy = true;
+                        this.Status = "Saving Sepolicies to File...";
 
-                            foreach (Models.SepolicyInfo current in this.Sepolicies)
+                        string fileName = await this.dlgSave.ShowAsync(parent);
+                        if (fileName.Length > 0)
+                        {
+                            List<string> list = new List<string>();
+                            if (File.Exists(fileName))
                             {
-                                if (!list.Contains(current.Sepolicy))
+                                using (StreamReader reader = new StreamReader(fileName))
                                 {
-                                    writer.WriteLine(current.Sepolicy);
+                                    while (reader.Peek() != -1)
+                                    {
+                                        list.Add(reader.ReadLine());
+                                    }
+                                }
+                            }
+                            using (StreamWriter writer = new StreamWriter(fileName, true, Encoding.ASCII))
+                            {
+                                writer.NewLine = LineEnding == LineEndings.LF ? "\n" : "\r\n";
+
+                                foreach (Models.SepolicyInfo current in this.Sepolicies)
+                                {
+                                    if (!list.Contains(current.Sepolicy))
+                                    {
+                                        writer.WriteLine(current.Sepolicy);
+                                    }
                                 }
                             }
                         }
+
+                        await Utils.MessageBoxHelper.Info("Successfully written sepolicies to file.", "Done", parent);
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                    await Utils.MessageBoxHelper.Error("Error on saving sepolicies to file! " + ex.Message, "Error", parent);
                 }
                 finally
                 {
@@ -254,41 +288,47 @@ namespace AndroidSepolicyHelper.ViewModels
             {
                 try
                 {
-                    this.IsBusy = true;
-                    this.Status = "Splitting & Saving Sepolicies to Files...";
-
-                    string folderName = await this.dlgFolder.ShowAsync(parent);
-
-                    if (this.Sepolicies != null && this.Sepolicies.Count > 0 && folderName.Length > 0)
+                    if (this.Sepolicies != null && this.Sepolicies.Count > 0)
                     {
-                        List<string> existingPolicies = new List<string>();
-                        foreach (Models.SepolicyInfo current in this.Sepolicies)
+                        this.IsBusy = true;
+                        this.Status = "Splitting & Saving Sepolicies to Files...";
+
+                        string folderName = await this.dlgFolder.ShowAsync(parent);
+
+                        if (folderName.Length > 0)
                         {
-                            string file = Path.Combine(folderName, current.Source + ".te");
-                            if (File.Exists(file))
+                            List<string> existingPolicies = new List<string>();
+                            foreach (Models.SepolicyInfo current in this.Sepolicies)
                             {
-                                using (StreamReader reader = new StreamReader(file))
+                                string file = Path.Combine(folderName, current.Source + ".te");
+                                if (File.Exists(file))
                                 {
-                                    while (reader.Peek() != -1)
+                                    using (StreamReader reader = new StreamReader(file))
                                     {
-                                        existingPolicies.Add(reader.ReadLine().Replace(" ", ""));
+                                        while (reader.Peek() != -1)
+                                        {
+                                            existingPolicies.Add(reader.ReadLine().Replace(" ", ""));
+                                        }
+                                    }
+                                }
+                                if (!existingPolicies.Contains(current.Sepolicy.Replace(" ", "")))
+                                {
+                                    using (StreamWriter writer = new StreamWriter(file, true, Encoding.ASCII))
+                                    {
+                                        writer.NewLine = LineEnding == LineEndings.LF ? "\n" : "\r\n";
+                                        writer.WriteLine(current.Sepolicy);
                                     }
                                 }
                             }
-                            if (!existingPolicies.Contains(current.Sepolicy.Replace(" ", "")))
-                            {
-                                using (StreamWriter writer = new StreamWriter(file, true, Encoding.ASCII))
-                                {
-                                    writer.NewLine = LineEnding == LineEndings.LF ? "\n" : "\r\n";
-                                    writer.WriteLine(current.Sepolicy);
-                                }
-                            }
                         }
+
+                        await Utils.MessageBoxHelper.Info("Successfully splitted & written sepolicies to file(s).", "Done", parent);
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                    await Utils.MessageBoxHelper.Error("Error on splitting/saving sepolicies to file(s)! " + ex.Message, "Error", parent);
                 }
                 finally
                 {
@@ -325,9 +365,13 @@ namespace AndroidSepolicyHelper.ViewModels
         #endregion
 
         #region Events
-        private void LogcatEnded(object sender, EventArgs e)
+        private async void LogcatEnded(object sender, EventArgs e)
         {
-            this.ShowStopButton = false;
+            if (this.ShowStopButton)
+            {
+                this.ShowStopButton = false;
+                await Utils.MessageBoxHelper.Info("Logcat process ended!", "Done", null);
+            }
         }
 
         private void LogcatReceived(Utils.ADB.LogReceivedEventArgs e)
