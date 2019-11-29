@@ -43,6 +43,7 @@ namespace AndroidSepolicyHelper.ViewModels
         private bool ignoreExistingPolicies;
         private ObservableCollection<Models.SepolicyInfo> sepolicies;
         private Models.Device selectedDevice;
+        private Models.SepolicyInfo selectedSepolicy;
         #endregion
 
         #region Properties
@@ -56,6 +57,7 @@ namespace AndroidSepolicyHelper.ViewModels
         public bool IgnoreExistingPolicies { get => ignoreExistingPolicies; set => this.RaiseAndSetIfChanged(ref ignoreExistingPolicies, value); }
         public ObservableCollection<Models.SepolicyInfo> Sepolicies { get => sepolicies; set => this.RaiseAndSetIfChanged(ref sepolicies, value); }
         public Models.Device SelectedDevice { get => selectedDevice; set => this.RaiseAndSetIfChanged(ref selectedDevice, value); }
+        public Models.SepolicyInfo SelectedSepolicy { get => selectedSepolicy; set => this.RaiseAndSetIfChanged(ref selectedSepolicy, value); }
         #endregion
 
         #region Enums

@@ -91,26 +91,26 @@
           <ColumnDefinition Width="250" />
         </Grid.ColumnDefinitions>
 
-        <DataGrid Grid.Row="0" Grid.Column="0" Grid.RowSpan="5" Margin="0 0 5 0" BorderBrush="Gray" Name="dg_Sepolicies" Items="{Binding Path=Sepolicies}">
+        <DataGrid Grid.Row="0" Grid.Column="0" Grid.RowSpan="5" Margin="0 0 5 0" BorderBrush="Gray" Name="dg_Sepolicies" Items="{Binding Path=Sepolicies}" SelectionMode="Single" SelectedItem="{Binding Path=SelectedSepolicy}" SelectionChanged="DataGrid_SelectionChanged">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Sepolicies" Binding="{Binding Sepolicy, Mode=OneWay}" IsReadOnly="True" />
           </DataGrid.Columns>
         </DataGrid>
 
         <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="Source" />
-        <TextBox Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Name="txt_Policy_Source" IsReadOnly="True" />
+        <TextBox Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Name="txt_Policy_Source" IsReadOnly="True" DataContext="{Binding Path=SelectedSepolicy}" Text="{Binding Path=Source}"/>
 
         <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 5 0 0" VerticalAlignment="Center" Text="Target" />
-        <TextBox Grid.Row="1" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_Target" IsReadOnly="True" />
+        <TextBox Grid.Row="1" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_Target" IsReadOnly="True" DataContext="{Binding Path=SelectedSepolicy}" Text="{Binding Path=Target}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="1" Margin="0 5 5 0" VerticalAlignment="Center" Text="Target Class" />
-        <TextBox Grid.Row="2" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_TargetClass" IsReadOnly="True" />
+        <TextBox Grid.Row="2" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_TargetClass" IsReadOnly="True" DataContext="{Binding Path=SelectedSepolicy}" Text="{Binding Path=TargetClass}"/>
 
         <TextBlock Grid.Row="3" Grid.Column="1" Margin="0 5 0 0" VerticalAlignment="Center" Text="Action" />
-        <TextBox Grid.Row="3" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_Action" IsReadOnly="True" />
+        <TextBox Grid.Row="3" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_Action" IsReadOnly="True" DataContext="{Binding Path=SelectedSepolicy}" Text="{Binding Path=Action}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="1" Margin="0 5 0 0" VerticalAlignment="Top" Text="Reference" />
-        <TextBox Grid.Row="4" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_Reference" IsReadOnly="True" />
+        <TextBox Grid.Row="4" Grid.Column="2" Margin="0 5 0 0" Name="txt_Policy_Reference" IsReadOnly="True" DataContext="{Binding Path=SelectedSepolicy}" Text="{Binding Path=Reference}"/>
       </Grid>
     </Grid>
 
