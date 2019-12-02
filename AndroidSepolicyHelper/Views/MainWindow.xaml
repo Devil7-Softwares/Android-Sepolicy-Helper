@@ -5,9 +5,9 @@
         xmlns:utils="clr-namespace:Devil7.Android.SepolicyHelper.Utils;assembly=Devil7.Android.SepolicyHelper"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" 
         x:Class="Devil7.Android.SepolicyHelper.Views.MainWindow"
-        Icon="/Assets/icon.ico"
+        Icon="/Assets/icon.ico" Width="800" Height="450"
         Title="Devil7.Android.SepolicyHelper">
 
   <Design.DataContext>
