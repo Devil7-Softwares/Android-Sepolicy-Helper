@@ -8,6 +8,7 @@ using System.Reactive;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO.Compression;
 
 namespace Devil7.Android.SepolicyHelper.ViewModels
 {
@@ -27,6 +28,7 @@ namespace Devil7.Android.SepolicyHelper.ViewModels
             this.RefreshDevices = ReactiveCommand.CreateFromTask<Window>(refreshDevices);
             this.StartProcess = ReactiveCommand.CreateFromTask<Window>(startProcess);
             this.StopProcess = ReactiveCommand.CreateFromTask<Window>(stopProcess);
+            this.ExtractADB = ReactiveCommand.CreateFromTask<EventArgs>(extractADB);
 
             Utils.ADB.LogcatEnded += LogcatEnded;
             Utils.ADB.LogcatReceived += LogcatReceived;
@@ -361,6 +363,49 @@ namespace Devil7.Android.SepolicyHelper.ViewModels
                     Console.WriteLine("Unable to write sepolicy for log: " + logString);
                 }
             }
+        }
+
+        public ReactiveCommand<EventArgs, Unit> ExtractADB { get; }
+        private Task extractADB(EventArgs e)
+        {
+            return Task.Run(() => {
+                try
+                {
+                    this.IsBusy = true;
+                    this.Status = "Extracting ADB Binaries...";
+
+                    FileInfo adbZip = new FileInfo(Path.Combine(AppContext.BaseDirectory, "adb.zip"));
+                    DirectoryInfo adbDir = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "adb"));
+                    if (!adbDir.Exists && adbZip.Exists)
+                    {
+                        using (ZipArchive archive = ZipFile.OpenRead(adbZip.FullName))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                if (entry.Name != "")
+                                {
+                                    string destinationPath = Path.GetFullPath(Path.Combine(adbDir.FullName, entry.FullName));
+                                    FileInfo destinationFile = new FileInfo(destinationPath);
+                                    if (!destinationFile.Directory.Exists)
+                                    {
+                                        destinationFile.Directory.Create();
+                                    }
+                                    if (destinationPath.StartsWith(adbDir.FullName, StringComparison.Ordinal))
+                                        entry.ExtractToFile(destinationPath);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Unable to extract ADB binaries. " + ex.Message);
+                }
+                finally
+                {
+                    this.IsBusy = false;
+                }
+            });
         }
         #endregion
 
