@@ -27,4 +27,13 @@
   <ItemGroup>
     <Folder Include="Controls\" />
   </ItemGroup>
+  <Target Name="ADB" AfterTargets="Build" Condition=" '$(OS)' == 'Windows_NT' ">
+    <Copy SourceFiles="$(ProjectDir)Assets\adb_windows.zip" DestinationFiles="$(OutDir)adb.zip"/>
+  </Target>
+  <Target Name="ADB" AfterTargets="Build" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' ">
+    <Copy SourceFiles="$(ProjectDir)Assets\adb_linux.zip" DestinationFiles="$(OutDir)adb.zip"/>
+  </Target>
+  <Target Name="ADB" AfterTargets="Build" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' ">
+    <Copy SourceFiles="$(ProjectDir)Assets\adb_darwin.zip" DestinationFiles="$(OutDir)adb.zip"/>
+  </Target>
 </Project>
